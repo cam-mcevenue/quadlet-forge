@@ -3,6 +3,17 @@
   "version": "0.1.0",
   "license": "MIT",
   "exports": "./main.ts",
+  "fmt": {
+    "indentWidth": 2,
+    "include": ["**/*.ts"],
+    "semiColons": false,
+    "singleQuote": true
+  },
+  "lint": {
+    "rules": {
+      "exclude": ["no-explicit-any"]
+    }
+  },
   "tasks": {
     "dev": "deno run --watch main.ts"
   },
