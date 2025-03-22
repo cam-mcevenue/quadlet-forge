@@ -17,8 +17,8 @@
     "exclude": ["**/*.md"]
   },
   "lint": {
-    "tags": ["recommended"],
     "rules": {
+      "tags": ["recommended"],
       "exclude": ["no-explicit-any"]
     }
   },
