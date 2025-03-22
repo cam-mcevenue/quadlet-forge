@@ -3,10 +3,6 @@ import { join } from "@std/path";
 
 const CONFIG_NAME = "quadlet-forge";
 
-export function defineConfig(config: Config) {
-  return config;
-}
-
 export async function loadConfig(): Promise<Config> {
   try {
     // Resolve the path relative to the user's working directory
@@ -33,5 +29,3 @@ export async function loadConfig(): Promise<Config> {
     );
   }
 }
-
-loadConfig();
