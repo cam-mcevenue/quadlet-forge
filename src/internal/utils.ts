@@ -1,4 +1,4 @@
-import { ObjectEntryArray } from "./types.ts";
+import { ObjectEntryArray } from './types.ts'
 
 /**
  *  Convert an object to an array of objects with the name as a property
@@ -12,10 +12,10 @@ import { ObjectEntryArray } from "./types.ts";
  * // entries = [{ key: 'a', value: 1 }, { key: 'b', value: 2 }]
  */
 export function toEntries<T extends Record<string, unknown>>(
-  obj: T
+    obj: T,
 ): ObjectEntryArray<T>[] {
-  return Object.entries(obj).map(([key, value]) => ({
-    key,
-    value,
-  })) as ObjectEntryArray<T>[];
+    return Object.entries(obj).map(([key, value]) => ({
+        key,
+        value,
+    })) as ObjectEntryArray<T>[]
 }
