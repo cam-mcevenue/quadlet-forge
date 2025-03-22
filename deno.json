@@ -1,13 +1,20 @@
 {
   "name": "@smooth/quadlet-forge",
+  "author": "cam-mcevenue",
   "version": "0.1.0",
+  "description": "A library for generating podman quadlets for linux containers in a typesafe and dynamic way.",
+  "repository": "https://github.com/cam-mcevenue/quadlet-forge",
   "license": "MIT",
-  "exports": "./main.ts",
+  "keywords": ["deno", "podman", "linux", "quadlet"],
+  "exports": "./mod.ts",
   "fmt": {
-    "indentWidth": 2,
-    "include": ["**/*.ts"],
+    "indentWidth": 4,
     "semiColons": false,
-    "singleQuote": true
+    "singleQuote": true,
+    "lineWidth": 100,
+    "useTabs": false,
+    "include": ["**/*.ts"],
+    "exclude": ["**/*.md"]
   },
   "lint": {
     "rules": {
@@ -22,5 +29,8 @@
     "@std/fs": "jsr:@std/fs@^1.0.14",
     "@std/path": "jsr:@std/path@^1.0.8",
     "@std/yaml": "jsr:@std/yaml@^1.0.5"
+  },
+  "publish": {
+    "exclude": [".vscode", ".github", "**/*.test.ts"]
   }
 }
