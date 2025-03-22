@@ -27,3 +27,8 @@ export type Expand<T> = T extends (...args: infer A) => infer R
 export type AtLeastOne<Obj, Keys = keyof Obj> = Keys extends keyof Obj
   ? Expand<Pick<Obj, Keys>>
   : never;
+
+export type ObjectEntryArray<T extends Record<string, unknown>> = Expand<{
+  key: keyof T;
+  value: T[keyof T];
+}>;
