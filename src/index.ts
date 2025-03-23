@@ -1,4 +1,6 @@
-import { configSchema, type Config } from "./config/schema.ts";
+import type { Config } from "./config/types.ts";
+
+export type { Config };
 
 /**
  * Generates artifacts based on the configuration object
@@ -30,14 +32,14 @@ export function generateArtifacts(config: () => Config): Config;
 export function generateArtifacts(config: Config | (() => Config)): Config {
   const resolvedConfig = typeof config === "function" ? config() : config;
 
-  const parsedConfig = configSchema.safeParse(resolvedConfig);
+  /*const parsedConfig = configSchema.safeParse(resolvedConfig);
 
   if (!parsedConfig.success) {
     throw new Error(
       `Invalid config. Please fix all typescript errors and 
          ensure that the configuration object matches the schema.`
     );
-  }
+  }*/
 
-  return parsedConfig.data;
+  return resolvedConfig;
 }
