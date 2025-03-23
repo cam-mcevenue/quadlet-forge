@@ -1,6 +1,6 @@
-import type { Config } from "./config/types.ts";
+import type { Config, UserConfig } from "./config/types.ts";
 
-export type { Config };
+export type { Config, UserConfig };
 
 /**
  * Generates artifacts based on the configuration object

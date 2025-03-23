@@ -1,4 +1,6 @@
+/** Supported linux distributions */
 export type Distros = "coreos";
+
 export type UserName = string;
 
 /** Configuration object for a user to be created on the linux server.
