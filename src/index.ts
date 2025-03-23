@@ -6,8 +6,8 @@ export type { Config };
  * Generates artifacts based on the configuration object
  *
  * @param config - The configuration object or a function that returns the configuration object
- * @example
- *
+ * @example Usage of generateArtifacts
+ * ```typescript
  * import { generateArtifacts } from "@smootclose/quadlet-forge";
  *
  * // as an object
@@ -17,6 +17,7 @@ export type { Config };
  * });
  *
  * // or as a function
+ *
  * const config = generateArtifacts(() => {
  *
  *  // some custom logic to generate the config
@@ -26,6 +27,7 @@ export type { Config };
  *  user: "quadlet",
  * }
  * })
+ * ``
  */
 export function generateArtifacts(config: Config): Config;
 export function generateArtifacts(config: () => Config): Config;

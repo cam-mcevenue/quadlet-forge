@@ -1,6 +1,22 @@
 export type Distros = "coreos";
 export type UserName = string;
 
+/**
+ * Configuration object for a user to be created on the linux server.
+ *
+ * @example
+ * ```typescript
+ * const userConfig = {
+ *      sudo: true,
+ *      ssh_public_keys: [
+ *           "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCqXJ7
+ *      ],
+ *      groups: ["wheel", "sudo"],
+ *      podman_containers: ["nginx"],
+ *      podman_pods: ["nginx-pod"]
+ * }
+ * ```
+ */
 export type UserConfig = {
   /** Whether the user should have sudo privileges */
   sudo: boolean;
@@ -10,8 +26,6 @@ export type UserConfig = {
    * **WARNING:** DO NOT as private keys here
    */
   ssh_public_keys?: string[];
-  /** List of groups to add the user to. 
-   * 
   /** Groups to add the user to */
   groups?: string[];
   /**
