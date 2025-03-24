@@ -11,9 +11,11 @@
  * type AB = A & B // { a: string, b: number } & { c: boolean, d: string }
  * type ABExpanded = Expand<AB> // { a: string, b: number, c: boolean, d: string }
  */
-export type Expand<T> = T extends (...args: infer A) => infer R ? (...args: Expand<A>) => Expand<R>
-    : T extends infer O ? { [K in keyof O]: O[K] }
-    : never
+export type Expand<T> = T extends (...args: infer A) => infer R
+  ? (...args: Expand<A>) => Expand<R>
+  : T extends infer O
+  ? { [K in keyof O]: O[K] }
+  : never;
 
 /**
  * Similar to the Partial type, but it requires at least one key to be present
@@ -22,10 +24,26 @@ export type Expand<T> = T extends (...args: infer A) => infer R ? (...args: Expa
  * @example
  * type Test = AtLeastOne<{ a: string, b: number }> // { a: string } | { b: number }
  */
-export type AtLeastOne<Obj, Keys = keyof Obj> = Keys extends keyof Obj ? Expand<Pick<Obj, Keys>>
-    : never
+export type AtLeastOne<Obj, Keys = keyof Obj> = Keys extends keyof Obj
+  ? Expand<Pick<Obj, Keys>>
+  : never;
 
 export type ObjectEntryArray<T extends Record<string, unknown>> = Expand<{
-    key: keyof T
-    value: T[keyof T]
-}>
+  key: keyof T;
+  value: T[keyof T];
+}>;
+
+/**  Checks an array for duplicate values */
+type HasDuplicate<T extends readonly any[]> = T extends readonly [
+  infer X,
+  ...infer Rest
+]
+  ? X extends Rest[number]
+    ? true
+    : HasDuplicate<Rest>
+  : false;
+
+/** Ensures array has only unique values */
+export type UniqueArray<T extends readonly any[]> = HasDuplicate<T> extends true
+  ? "Duplicate values are not allowed"
+  : T;

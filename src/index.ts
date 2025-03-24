@@ -1,6 +1,10 @@
-import type { Config, UserConfig } from "./config/types.ts";
+import type {
+  ButaneGeneratorConfig,
+  ButaneUserConfig,
+  QuadletGeneratorConfig,
+} from "./config/types.ts";
 
-export type { Config, UserConfig };
+export type { ButaneGeneratorConfig, ButaneUserConfig, QuadletGeneratorConfig };
 
 /**
  * Generates artifacts based on the configuration object
@@ -29,9 +33,15 @@ export type { Config, UserConfig };
  * })
  * ``
  */
-export function generateArtifacts(config: Config): Config;
-export function generateArtifacts(config: () => Config): Config;
-export function generateArtifacts(config: Config | (() => Config)): Config {
+export function generateQuadlets(
+  config: QuadletGeneratorConfig
+): QuadletGeneratorConfig;
+export function generateQuadlets(
+  config: () => QuadletGeneratorConfig
+): QuadletGeneratorConfig;
+export function generateQuadlets(
+  config: QuadletGeneratorConfig | (() => QuadletGeneratorConfig)
+): QuadletGeneratorConfig {
   const resolvedConfig = typeof config === "function" ? config() : config;
 
   /*const parsedConfig = configSchema.safeParse(resolvedConfig);
