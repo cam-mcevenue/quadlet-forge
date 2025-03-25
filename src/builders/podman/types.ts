@@ -45,13 +45,15 @@ export type PodmanResourceConfig = {
  *
  * @typeParam Config - Resource configuration type extending PodmanResourceConfig
  * @typeParam FileExtension - Type of quadlet file to generate (see {@link AllowedExtensions})
+ * @typeParam UseResult - Type of the result when using resources. Pass a custom return type to override
  *
  * Network resource examples -> {@link createNetworks}
  * Volume resource examples -> {@link createVolumes}
  */
 export type PodmanResource<
   Config extends PodmanResourceConfig,
-  FileExtension extends AllowedExtensions
+  FileExtension extends AllowedExtensions,
+  UseResult
 > = {
   /** Select resources by name with duplicate checking
    * @param names Array of unique resource names to use
@@ -62,7 +64,7 @@ export type PodmanResource<
    */
   use: <const N extends GetKeyValues<readonly Config[], "name">[]>(
     names: UniqueArray<N>
-  ) => N;
+  ) => UseResult extends false ? N : UseResult;
 
   /** Get resource templates by name
    * @param names Array of unique resource names to get templates for
@@ -76,7 +78,8 @@ export type PodmanResource<
 /** Factory type for creating Podman resource builders */
 export type PodmanResourceFactory<
   Config extends PodmanResourceConfig,
-  FileExtension extends AllowedExtensions
+  FileExtension extends AllowedExtensions,
+  UseResult = false
 > = <const T extends readonly Config[]>(
   configs: UniqueObjectKeyArray<T, "name">
-) => PodmanResource<T[number], FileExtension>;
+) => PodmanResource<T[number], FileExtension, UseResult>;
