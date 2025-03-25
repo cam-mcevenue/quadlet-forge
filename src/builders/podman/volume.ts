@@ -2,6 +2,7 @@ import type {
   PodmanResourceFactory,
   PodmanResource,
 } from "$lib/builders/podman/types.ts";
+import type { Expand } from "$lib/internal/types.ts";
 import { PODMAN_PATHS } from "$lib/shared/constants.ts";
 
 /** Configuration for podman volume resources */
@@ -21,6 +22,33 @@ export type PodmanVolumeConfig = {
    */
   readonly selinux_label?: "Z" | "z";
 };
+
+/** Type for the fully resolved volume paths used in container templates */
+type ResolvedVolumeConfig<T extends PodmanVolumeConfig> = Expand<{
+  /** The volume source path
+   * - For bind mounts: The host_path (/host/path)
+   * - For podman volumes: Name with .volume suffix (volume-name.volume)
+   */
+  readonly host_path: string;
+
+  /** The container mount path with optional SELinux label
+   * @example With SELinux: "/data:Z"
+   * @example Without SELinux: "/data"
+   */
+  readonly mount_path: string;
+}>;
+
+/** Build the source path for a volume */
+function buildHostPath(config: PodmanVolumeConfig): string {
+  return config.host_path ?? `${config.name}.volume`;
+}
+
+/** Build the mount path with optional SELinux label */
+function buildMountPath(config: PodmanVolumeConfig): string {
+  return config.selinux_label
+    ? `${config.mount_path}:${config.selinux_label}`
+    : config.mount_path;
+}
 
 /** Template to generate dynamic podman .volume quadlet files
  * @param name - Volume name
@@ -50,10 +78,11 @@ const template = (name: string, config: PodmanVolumeConfig) =>
  *   mount_path: "/etc/myapp/config",
  *   host_path: "/home/user/myapp/config",
  *   selinux_label: "z"
- * }] as const);
+ * }]);
  *
  * // Use volumes in container config
  * const names = volumes.use(["db-data", "config"]);
+ * // Returns {host_path: string, mount_path: string}[]
  *
  * // Get quadlet files (only for podman-managed volumes)
  * // Will throw an error if bind mounts are included
@@ -62,7 +91,8 @@ const template = (name: string, config: PodmanVolumeConfig) =>
  */
 export const createVolumes: PodmanResourceFactory<
   PodmanVolumeConfig,
-  "volume"
+  "volume",
+  ResolvedVolumeConfig<PodmanVolumeConfig>[]
 > = (volumes) => {
   // Only create templates for podman-managed volumes
   const templates = volumes
@@ -81,7 +111,13 @@ export const createVolumes: PodmanResourceFactory<
       if (!validNames) {
         throw new Error(`Invalid volume names: ${names.join(", ")}`);
       }
-      return names;
+      return names.map((name) => {
+        const volume = volumes.find((v) => v.name === name)!;
+        return {
+          host_path: buildHostPath(volume),
+          mount_path: buildMountPath(volume),
+        };
+      });
     },
     getFileTemplates: (names) => {
       // Check for bind mounts trying to get templates
@@ -99,3 +135,22 @@ export const createVolumes: PodmanResourceFactory<
     },
   };
 };
+
+const volumes = createVolumes([
+  {
+    // Podman-managed volume
+    name: "db-data",
+    mount_path: "/var/lib/postgresql/data",
+    selinux_label: "Z",
+  },
+  {
+    // Host bind mount
+    name: "config",
+    mount_path: "/etc/myapp/config",
+    host_path: "/home/user/myapp/config",
+    selinux_label: "z",
+  },
+]);
+
+// Use volumes in container config
+const names = volumes.use(["db-data", "config"]);
