@@ -5,8 +5,8 @@ export const DISTRO_HOME_DIR = {
   coreos: "/var/home",
 } as const;
 
-export type PodmanPathMap = typeof PODMAN_PATHS;
-export const PODMAN_PATHS = {
-  quadlet: ".config/containers/systemd",
-  systemd: ".config/systemd/user",
+export type PathMap = typeof PATHS;
+export const PATHS = {
+  user_quadlet: ".config/containers/systemd",
+  user_systemd: ".config/systemd/user",
 } as const;
