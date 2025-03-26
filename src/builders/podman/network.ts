@@ -1,26 +1,22 @@
-import type {
-  PodmanResourceFactory,
-  PodmanResource,
-} from "$lib/builders/podman/types.ts";
-import { PODMAN_PATHS } from "$lib/shared/constants.ts";
+import type { Resource, ResourceConfig } from "$lib/builders/types.ts";
+import type { UniqueObjectKeyArray } from "$lib/internal/types.ts";
 
 /** Configuration object for podman .network file */
-type PodmanNetworkConfig = {
-  readonly name: string;
+export type PodmanNetworkConfig = ResourceConfig<{
   /** Subnet in CIDR notation (e.g. '10.89.0.0/24') */
-  readonly subnet: string;
+  subnet: string;
   /** Gateway IP address (e.g. '10.89.1.1') */
-  readonly gateway: string;
-};
+  gateway: string;
+}>;
 
 /** Template to generate dynamic podman .network quadlet files
  * @param config - A {@linkcode PodmanNetworkConfig} object
  * @returns The generated `.network` file contents
  */
-const template = (name: string, config: PodmanNetworkConfig) =>
+const template = (id: string, config: PodmanNetworkConfig) =>
   `
 [Network]
-NetworkName=${name}
+NetworkName=${id}
 Driver=bridge
 Subnet=${config.subnet}
 Gateway=${config.gateway}
@@ -29,45 +25,76 @@ Gateway=${config.gateway}
 WantedBy=default.target
 `.trim();
 
-/** Creates podman network resources with quadlet template generation
+/** Creates `podman network` with quadlet template generation method
  *
- * @param networks Network configurations with unique names
- * @returns PodmanResource object (see {@linkcode PodmanResource})
- *
- * @see {@link PodmanResourceFactory} for more information on the resource factory pattern
- * @example Type-safe network creation
+ * @param config Network configuration
+ * @returns A {@linkcode Resource} object with `config` type {@linkcode PodmanNetworkConfig}
+ * 
+ * @example Network create
  * ```ts
- * const networks = createNetworks([{
+ * const appNetwork = createNetwork({
+ *   id: "app",
+ *   subnet: "10.89.0.0/24",
+ *   gateway: "10.89.0.1"
+ * });
+ *```
+
+ * @example Network file generation
+ * ```ts
+ * appNetwork.generateFileTemplate(); // Returns quadlet file contents as template string
+ * ```
+ */
+function createNetwork<const T extends PodmanNetworkConfig>(
+  config: T
+): Resource<"network", T> {
+  const { id, ..._config } = config;
+
+  return {
+    type: "network",
+    id,
+    config,
+    generateFileTemplate: () => template(id, config),
+  };
+}
+
+/** A `podman network` resource factory
+ *
+ * @param configs Array of {@linkcode PodmanNetworkConfig} configurations
+ * @returns Object with `use` method to get network configurations by name
+ *
+ * @example Network creation/registration
+ * ```ts
+ * const networks = registerNetworks([{
  *   name: "app",
  *   subnet: "10.89.0.0/24",
  *   gateway: "10.89.0.1"
+ * },
+ * {
+ *   name: "db",
+ *   subnet: "10.89.0.1/24",
+ *   gateway: "10.89.0.1"
  * }]);
  *
- * // Use networks in container/pod config
- * const names = networks.use(["app"]); // Type: ["app"]
- *
- * // Get quadlet files for systemd
- * const files = networks.getFileTemplates(["app"]); // Type: PodmanFileConfig[]
+ * // Retrieve network configuration to be used in other resources
+ * const names = networks.use("app"); // PodmanNetworkConfig for 'app' network
  * ```
- *
- * Type safety prevents:
- * - Using networks that don't exist
- * - Using duplicate network names
- * - Misspelling network names
  */
-export const createNetworks: PodmanResourceFactory<
-  PodmanNetworkConfig,
-  "network"
-> = (networks) => {
-  const templates = networks.map((config) => ({
-    file_name: `${config.name}.network` as const,
-    output_dir_local: PODMAN_PATHS.quadlet,
-    contents: template(config.name, config),
-  }));
+export function registerNetworks<const T extends PodmanNetworkConfig[]>(
+  networks: UniqueObjectKeyArray<T, "id">
+) {
+  const networkMap = new Map<string, Resource<"network", T[number]>>();
+  networks.forEach((network) => {
+    networkMap.set(network.id, createNetwork(network));
+  });
 
   return {
-    use: (names) => names,
-    getFileTemplates: (names) =>
-      templates.filter((t) => names.includes(t.file_name.split(".")[0])),
+    use: <const Names extends T[number]["id"][]>(names: [...Names]) =>
+      names.map(
+        (name) =>
+          networkMap.get(name) as Resource<
+            "network",
+            Extract<T[number], { id: Names[number] }>
+          >
+      ),
   };
-};
+}
