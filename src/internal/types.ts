@@ -4,12 +4,13 @@
  * instead of the alias name
  *
  * @example
- *
+ *```ts
  * type A = { a: string, b: number }
  * type B = { c: boolean, d: string }
  *
  * type AB = A & B // { a: string, b: number } & { c: boolean, d: string }
  * type ABExpanded = Expand<AB> // { a: string, b: number, c: boolean, d: string }
+ * ```
  */
 export type Expand<T> = T extends (...args: infer A) => infer R
   ? (...args: Expand<A>) => Expand<R>
@@ -19,15 +20,39 @@ export type Expand<T> = T extends (...args: infer A) => infer R
 
 /**
  * Similar to the Partial type, but it requires at least one key to be present
- * and no keys the don't exit on the input Object
+ * and no keys that don't exit on the input Object
  *
  * @example
+ * ```ts
  * type Test = AtLeastOne<{ a: string, b: number }> // { a: string } | { b: number }
+ * ```
  */
 export type AtLeastOne<Obj, Keys = keyof Obj> = Keys extends keyof Obj
   ? Expand<Pick<Obj, Keys>>
   : never;
 
+/**
+ * Constructs a new type by omitting properties from type
+ * 'T' that exist in type 'U'.
+ *
+ * @template T - The base object type from which properties will be omitted.
+ * @template U - The object type whose properties will be omitted from 'T'.
+ * @example
+ * ```ts
+ * type Result = Without<{ a: number; b: string; }, { b: string; }>;
+ * // Result type will be { a: number; }
+ * ```
+ */
+export type Without<T extends object, U extends object> = Omit<T, keyof U>;
+
+export type Arrayable<T> = T[] | T;
+
+export type Fn = () => void;
+export type AnyFn = (...args: any[]) => any;
+
+/**
+ *
+ */
 export type ObjectEntryArray<T extends Record<string, unknown>> = Expand<{
   key: keyof T;
   value: T[keyof T];
