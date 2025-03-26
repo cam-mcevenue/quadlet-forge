@@ -1,5 +1,47 @@
 import type { Expand } from "$lib/internal/types.ts";
 
+type SystemdResourceTypes = "socket";
+type PodmanResourceTypes = "container" | "pod" | "volume" | "network";
+type ResourceTypes = Expand<SystemdResourceTypes | PodmanResourceTypes>;
+
+/** Resource configuration type that enforces:
+ * - All properties are readonly for immutability
+ * - Required 'id' property for resource identification
+ * - Preserves literal types for better type inference
+ * - Allows extending with custom properties via generic parameter
+ *
+ * @example
+ * ```ts
+ * type NetworkConfig = PodmanResourceConfig<{
+ *   subnet: string;
+ *   gateway: string;
+ * }>;
+ *
+ * // Results in:
+ * {
+ *   readonly id: string;
+ *   readonly subnet: string;
+ *   readonly gateway: string;
+ * }
+ * ```
+ */
+export type ResourceConfig<T extends Record<string, unknown> = {}> = Expand<
+  {
+    readonly id: string;
+  } & Readonly<T>
+>;
+
+/** Return type for create<Resource> functions */
+export type Resource<
+  Type extends ResourceTypes,
+  T extends ResourceConfig
+> = Expand<{
+  readonly type: Type;
+  readonly id: T["id"];
+  readonly config: T;
+  generateFileTemplate: () => string;
+}>;
+
 type FileTemplateBase<
   Name extends string,
   Extension extends string,
