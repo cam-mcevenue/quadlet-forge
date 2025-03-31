@@ -1,8 +1,9 @@
 import type { Expand } from "$lib/internal/types.ts";
 
-type SystemdResourceTypes = "socket";
-type PodmanResourceTypes = "container" | "pod" | "volume" | "network";
-type ResourceTypes = Expand<SystemdResourceTypes | PodmanResourceTypes>;
+export type PodmanResourceTypes = "container" | "pod" | "volume" | "network";
+export type SystemdResourceTypes = "socket";
+export type RuntimeDependencyTypes = Expand<PodmanResourceTypes | "port">;
+export type ResourceTypes = Expand<SystemdResourceTypes | PodmanResourceTypes>;
 
 /** Resource configuration type that enforces:
  * - All properties are readonly for immutability
@@ -35,12 +36,22 @@ export type ResourceConfig<T extends Record<string, unknown> = {}> = Expand<
 export type Resource<
   Type extends ResourceTypes,
   T extends ResourceConfig
-> = Expand<{
-  readonly type: Type;
-  readonly id: T["id"];
-  readonly config: T;
-  generateFileTemplate: () => string;
-}>;
+> = Expand<
+  {
+    readonly type: Type;
+    readonly id: T["id"];
+  } & {
+    config: () => T;
+    generateFileTemplate: () => string;
+  }
+>;
+
+export type DependencyOptions = {
+  /** Whether to replace or append to existing dependencies of the resource type
+   * @default false
+   */
+  overwrite?: boolean;
+};
 
 type FileTemplateBase<
   Name extends string,
